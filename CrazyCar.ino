@@ -15,15 +15,21 @@ const PROGMEM byte car_bitmap[]
     B01110111
 };
 
-const byte LEVEL1_SIZE = 5;
-const byte level1[LEVEL1_SIZE][3]
+const PROGMEM byte levels[]
 {
-    {20, LCDHEIGHT - 8, 16},
-    {15, LCDHEIGHT - 32, 20},
-    {5, LCDHEIGHT - 14, 10},
-    {50, LCDHEIGHT - 25, 7},
-    {40, LCDHEIGHT - 16, 14}
+    1,
+    5,
+    20, LCDHEIGHT - 8, 16,
+    15, LCDHEIGHT - 32, 20,
+    5, LCDHEIGHT - 14, 10,
+    50, LCDHEIGHT - 25, 7,
+    40, LCDHEIGHT - 16, 14
 };
+const byte MAX_LEVEL_SIZE = 16;
+
+byte current_level = 0;
+byte level_size = 0;
+byte level[MAX_LEVEL_SIZE][3];
 
 const byte car_vx = 2;
 const byte gravity = 1;
@@ -47,11 +53,23 @@ bool is_on_ground(byte x, byte y, byte w)
 
 bool is_on_any_ground()
 {
-    i = LEVEL1_SIZE;
+    i = level_size;
     while(--i)
-        if(is_on_ground(level1[i][0], level1[i][1], level1[i][2]))
+        if(is_on_ground(level[i][0], level[i][1], level[i][2]))
             return true;
     return false;
+}
+
+void load_level(byte level_number)
+{
+    if(level_number > pgm_read_byte(levels))
+        return;
+    offset = 1;
+    for(int l=0; l<level_number; l++)
+        offset += 3 * pgm_read_byte(levels + offset) + 1;
+    level_size = pgm_read_byte(levels + offset);
+    current_level = level_number;
+    memcpy_P(level, levels + offset + 1, 3 * level_size);
 }
 
 void setup()
@@ -59,6 +77,7 @@ void setup()
     gb.begin(); 
     gb.titleScreen(F("Crazy Car!!"), car_bitmap);
     gb.battery.show = false;
+    load_level(0);
 }
 
 void loop()
@@ -86,9 +105,9 @@ void loop()
         }
         car_y = min(LCDHEIGHT - 8, car_y + car_vy);
         car_vy = is_on_any_ground()? 0: car_vy + gravity;
-        i = LEVEL1_SIZE;
+        i = level_size;
         while(--i)
-            gb.display.drawFastHLine(level1[i][0], level1[i][1], level1[i][2]);
+            gb.display.drawFastHLine(level[i][0], level[i][1], level[i][2]);
         gb.display.drawBitmap(car_x, car_y, car_bitmap, NOROT, car_facing_left? NOFLIP:FLIPH);
     }
 }
