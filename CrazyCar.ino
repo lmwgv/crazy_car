@@ -70,7 +70,7 @@ void loop()
             if(is_on_any_ground())
                 car_vy = -4;
         }
-        else if(gb.buttons.repeat(BTN_DOWN, 1))
+        else if(gb.buttons.repeat(BTN_DOWN, 1) && car_vy == 0 && is_on_any_ground())
         {
             car_y += 1;
         }
