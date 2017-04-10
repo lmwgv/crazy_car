@@ -42,7 +42,7 @@ bool is_on_ground(byte x, byte y, byte w)
 {
     if(car_y + 8 == LCDHEIGHT)
         return true;
-    if(car_x > x + w || car_x + 8 < x)
+    if(car_x > x + w || car_x + 8 <= x)
         return false;
     if(car_y + 8 <= y && car_y + 8 + car_vy >= y)
     {
@@ -53,8 +53,8 @@ bool is_on_ground(byte x, byte y, byte w)
 
 bool is_on_any_ground()
 {
-    i = level_size;
-    while(--i)
+    byte i = level_size;
+    while(i--)
         if(is_on_ground(level[i][0], level[i][1], level[i][2]))
             return true;
     return false;
@@ -64,8 +64,8 @@ void load_level(byte level_number)
 {
     if(level_number > pgm_read_byte(levels))
         return;
-    offset = 1;
-    for(int l=0; l<level_number; l++)
+    word offset = 1;
+    for(byte l=0; l<level_number; l++)
         offset += 3 * pgm_read_byte(levels + offset) + 1;
     level_size = pgm_read_byte(levels + offset);
     current_level = level_number;
@@ -105,8 +105,8 @@ void loop()
         }
         car_y = min(LCDHEIGHT - 8, car_y + car_vy);
         car_vy = is_on_any_ground()? 0: car_vy + gravity;
-        i = level_size;
-        while(--i)
+        byte i = level_size;
+        while(i--)
             gb.display.drawFastHLine(level[i][0], level[i][1], level[i][2]);
         gb.display.drawBitmap(car_x, car_y, car_bitmap, NOROT, car_facing_left? NOFLIP:FLIPH);
     }
