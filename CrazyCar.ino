@@ -123,13 +123,14 @@ void loop()
             //bullet_vx = (car_x - cannon_x) * sqrt(gravity / (2.0 * (car_y - cannon_y)));
             // Approximate solution:
             byte y_factor;
-            if(car_y - cannon_y > 20)
+            char delta_y = car_y - cannon_y + 4;
+            if(delta_y > 20)
                 y_factor = 2;
-            else if(car_y - cannon_y > 0)
-                y_factor = cannon_fire_lut[car_y - cannon_y];
+            else if(delta_y > 0)
+                y_factor = pgm_read_byte(cannon_fire_lut + delta_y);
             else
                 y_factor = 11;
-            bullet_vx = ((int)((car_x - cannon_x) * y_factor)) >> 4;
+            bullet_vx = ((int)((car_x - cannon_x + (car_left? -2: 10)) * y_factor)) >> 4;
         }
         if(gb.buttons.pressed(BTN_A))
         {
