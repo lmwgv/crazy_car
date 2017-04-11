@@ -58,6 +58,8 @@ const byte cannon_y = 1;
 const byte fire_rate = 60;
 byte time_remaining = fire_rate;
 
+const PROGMEM byte cannon_fire_lut[] = {11, 11, 8, 7, 6, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+
 byte bullet_x = cannon_x;
 byte bullet_y = cannon_y;
 char bullet_vx = 0;
@@ -117,7 +119,17 @@ void loop()
             bullet_x = cannon_x;
             bullet_y = cannon_y;
             bullet_vy = 0;
-            bullet_vx = (car_x - cannon_x) / 4;
+            // Exact solution (computationally expensive):
+            //bullet_vx = (car_x - cannon_x) * sqrt(gravity / (2.0 * (car_y - cannon_y)));
+            // Approximate solution:
+            byte y_factor;
+            if(car_y - cannon_y > 20)
+                y_factor = 2;
+            else if(car_y - cannon_y > 0)
+                y_factor = cannon_fire_lut[car_y - cannon_y];
+            else
+                y_factor = 11;
+            bullet_vx = ((int)((car_x - cannon_x) * y_factor)) >> 4;
         }
         if(gb.buttons.pressed(BTN_A))
         {
