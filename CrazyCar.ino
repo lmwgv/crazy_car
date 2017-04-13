@@ -28,6 +28,28 @@ const PROGMEM byte cannon_bitmap[]
     B11111111
 };
 
+const PROGMEM byte empty_heart_bitmap[]
+{
+    7,6,
+    B01101100,
+    B10010010,
+    B10000010,
+    B01000100,
+    B00101000,
+    B00010000
+};
+
+const PROGMEM byte full_heart_bitmap[]
+{
+    7,6,
+    B01101100,
+    B11111110,
+    B11111110,
+    B01111100,
+    B00111000,
+    B00010000
+};
+
 const PROGMEM byte levels[]
 {
     1,
@@ -52,6 +74,7 @@ byte car_x = LCDWIDTH / 2;
 char car_y = LCDHEIGHT - 8;
 bool car_facing_left = true;
 char car_vy = 0;
+byte lives = 3;
 
 const byte cannon_x = LCDWIDTH / 2 - 4;
 const byte cannon_y = 1;
@@ -130,7 +153,7 @@ void loop()
                 y_factor = pgm_read_byte(cannon_fire_lut + delta_y);
             else
                 y_factor = 11;
-            bullet_vx = ((int)((car_x - cannon_x + (car_left? -2: 10)) * y_factor)) >> 4;
+            bullet_vx = ((int)((car_x - cannon_x + 4) * y_factor)) >> 4;
         }
         if(gb.buttons.pressed(BTN_A))
         {
@@ -165,9 +188,16 @@ void loop()
             if(bullet_y > LCDHEIGHT)
                 bullet_fired = false;
             gb.display.drawFastHLine(bullet_x, bullet_y, 2);
+            if(car_x < bullet_x && bullet_x < car_x + 8 && car_y < bullet_y && bullet_y < car_y + 8)
+            {
+                bullet_fired = false;
+                lives --;
+            }
         }
 
         gb.display.drawBitmap(car_x, car_y, car_bitmap, NOROT, car_facing_left? NOFLIP:FLIPH);
         gb.display.drawBitmap(cannon_x, cannon_y, cannon_bitmap, NOROT, car_x < cannon_x? NOFLIP:FLIPH);
+        for(int life=0; life<3; life++)
+            gb.display.drawBitmap(life * 8, 0, (life < lives)? full_heart_bitmap: empty_heart_bitmap);
     }
 }
